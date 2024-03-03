@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>サンプルページ</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+    <h1>ユーザー入力フォーム</h1>
+    <form id="userInputForm">
+        <label for="userInput">ユーザー入力:</label>
+        <input type="text" id="userInput" name="userInput"><br><br>
+        <input type="submit" value="送信">
+    </form>
+    <div id="conversationHistory"></div>
+
+    <script>
+        $(document).ready(function() {
+            var socket = io('http://localhost:3005');
+            var responseInProgress = false;
+            var tempResponse = ''; // 一時的にレスポンスを保存する変数
+            var lastUserInput = ''; // 最後のユーザー入力を一時的に保存
+    
+            function updateConversationHistory(message, sender) {
+                if (sender === 'user') {
+                    lastUserInput = message; // ユーザーの入力を保存
+                } else if (sender === 'response') {
+                    // レスポンスを一時的に保存
+                    tempResponse += message; // 既存のレスポンスに追加
+                    responseInProgress = true;
+                }
+            }
+    
+            // レスポンスの受信
+            socket.on('response', function(data) {
+                // レスポンスをリアルタイムで表示
+                if (!responseInProgress) {
+                    $('#conversationHistory').append('<p id="currentResponse"><strong>レスポンス:</strong> ' + data.response + '</p>');
+                    responseInProgress = true;
+                } else {
+                    $('#currentResponse').append(data.response);
+                }
+                updateConversationHistory(data.response, 'response');
+            });
+    
+            // 処理が完了したことを示すイベントをリッスン
+            socket.on('response_complete', function(data) {
+                // レスポンスの保存処理をここで行う
+                if (tempResponse !== '') {
+                    var currentConversation = 'ユーザー: ' + lastUserInput + '\nレスポンス: ' + tempResponse;
+                    localStorage.setItem('previousConversation', currentConversation);
+                    $('#prevConversation').val(currentConversation);
+                    tempResponse = ''; // 保存後はクリア
+                    responseInProgress = false;
+                }
+                // 新しいレスポンスのために準備
+                $('#currentResponse').removeAttr('id');
+            });
+    
+            $('#userInputForm').submit(function(e) {
+                e.preventDefault();
+                var userInput = $('#userInput').val();
+    
+                $('#conversationHistory').append('<p><strong>ユーザー:</strong> ' + userInput + '</p>');
+                updateConversationHistory(userInput, 'user');
+    
+                socket.emit('input', { user_input: userInput, previous_conversation: $('#prevConversation').val() });
+    
+                // 新しいユーザー入力でレスポンスの状態をリセット
+                responseInProgress = false;
+            });
+        });
+    </script>
+</body>
+</html>

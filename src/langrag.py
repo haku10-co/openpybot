@@ -41,5 +41,5 @@ def get_relevant_documents(query):
     retriever = faiss_index.as_retriever(
         search_kwargs={'k': 5}
     )
-    docs=retriever.get_relevant_documents("query")
+    docs=retriever.get_relevant_documents(query)
     return docs

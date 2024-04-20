@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from pypenai import process_user_input
@@ -34,7 +34,7 @@ def handle_input(data):
 
 @app.route('/')
 def index():
-    return "Welcome to the chatbot server!"
+    return send_file('web/index.html')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, host='localhost', port=3005)

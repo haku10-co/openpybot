@@ -10,7 +10,7 @@ load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 def get_relevant_documents(query):
     # /Users/kamehaku/Desktop/ultra/pypenai/src/documents/nDoc内のtxtファイルを探索
-    directory_path = "./src/documents/nDoc"
+    directory_path = "documents/nDoc"
     txt_files = [f for f in os.listdir(directory_path) if f.endswith('.txt')]
 
     # ドキュメントローダーを初期化し、全てのtxtファイルを読み込む

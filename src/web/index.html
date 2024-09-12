@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -7,106 +6,206 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f1f1f1;
-        }
         .chatbot-window {
-            display: none;
-            position: fixed;
-            bottom: 100px;
-            right: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 100%;
-            height: 500px;
-            z-index: 1000;
-        }
-        .chatbot-window.active {
-            display: flex;
-        }
-        .chatbot-header {
-            position: sticky;
-            top: 0;
-            background-color: #f0f0f0;
-            padding: 10px;
+                  display: none;
+                  position: fixed;
+                  bottom: 100px;
+                  right: 20px;
+                  background-color: #fff;
+                  border-radius: 5px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  max-width: 400px;
+                  width: 100%;
+                  height: 500px;
+                  z-index: 1000;
+      
+                  flex-direction: column;
+              }
+              .chatbot-header {
+                  position: sticky;
+                  top: 0;
+                  background-color: #f0f0f0;
+                  padding: 10px;
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  border-top-left-radius: 5px;
+                  border-top-right-radius: 5px;
+              }
+              .chatbot-content {
+                  padding: 20px;
+                  overflow-y: auto;
+                  height: calc(100% - 130px);
+                  flex-grow: 1;
+              }
+              .chatbot-message {
+                  margin-bottom: 10px;
+                  display: flex;
+              }
+              .chatbot-message p {
+                  margin: 0;
+                  padding: 10px;
+                  border-radius: 10px;
+                  max-width: 80%;
+                  white-space: pre-wrap;
+                  word-wrap: break-word;
+              }
+              .user-message {
+                  justify-content: flex-end;
+              }
+              .user-message p {
+                  background-color: #007bff;
+                  color: #fff;
+              }
+              .system-message {
+                  justify-content: flex-start;
+              }
+              .system-message p {
+                  background-color: #f0f0f0;
+                  color: #333;
+              }
+              .send-button {
+                  background-color: #007bff;
+                  border: none;
+                  border-radius: 5px;
+                  color: #fff;
+                  cursor: pointer;
+                  padding: 10px 20px;
+                  margin-top: 10px;
+              }
+              #openChatbot {
+                  position: fixed;
+                  bottom: 20px;
+                  right: 20px;
+                  cursor: pointer;
+                  border: none;
+                  background: none;
+                  z-index: 2000;
+              }
+              #closeChatbot {
+                  cursor: pointer;
+                  border: none;
+                  background: none;
+                  font-size: 18px;
+              }
+              #openChatbot img {
+                  width: 300px; /* 画像の幅 */
+                  height: auto; /* 高さを自動調整してアスペクト比を保持 */
+              }
+              #userInputForm {
+                  display: flex;
+                  align-items: center;
+                  padding: 10px;
+                  background-color: #f0f0f0;
+                  border-bottom-left-radius: 5px;
+                  border-bottom-right-radius: 5px;
+              }
+              #userInput {
+                  flex-grow: 1;
+                  border: none;
+                  border-radius: 5px;
+                  padding: 10px;
+                  margin-right: 10px;
+              }
+              .send-button {
+                  background-color: #007bff;
+                  border: none;
+                  border-radius: 5px;
+                  color: #fff;
+                  cursor: pointer;
+                  padding: 10px 20px;
+                  white-space: nowrap;
+              }
+        .main-container {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
+            margin-top: 20px;
         }
-        .chatbot-content {
-            padding: 20px;
-            overflow-y: auto;
-            height: calc(100% - 130px);
+        /* ボタンのスタイルを改善 */
+        button {
+            padding: 8px 12px;
+            margin: 5px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #007bff;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .chatbot-message {
-            margin-bottom: 10px;
-            display: flex;
-        }
-        .chatbot-message p {
-            margin: 0;
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 80%;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .user-message {
-            justify-content: flex-end;
-        }
-        .user-message p {
+        button:hover {
             background-color: #007bff;
-            color: #fff;
+            color: #ffffff;
         }
-        .system-message {
-            justify-content: flex-start;
+        #uploadButton, #listFilesButton {
+            display: inline-block;
+            width: auto;
         }
-        .system-message p {
-            background-color: #f0f0f0;
+        .file-action-button {
+            padding: 4px 8px;
+            font-size: 0.9em;
+        }
+
+        /* ファイル管理セクションのスタイル調整 */
+        .file-management {
+            width: 45%;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+        }
+        .file-management h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
             color: #333;
         }
-        .send-button {
-            background-color: #007bff;
-            border: none;
+        #fileList {
+            margin-top: 15px;
+        }
+        #fileListContainer {
+            display: none;
+            margin-top: 15px;
+        }
+        #fileList ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        #fileList li {
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 3px;
+        }
+        .toggle-button {
+            background-color: #f0f0f0;
+            border: 1px solid #d0d0d0;
+        }
+        .toggle-button.active {
+            background-color: #e0e0e0;
+        }
+
+        /* Context Informationのスタイル調整 */
+        .context-information {
+            width: 45%;
+            border: 1px solid #ccc;
+            padding: 15px;
             border-radius: 5px;
-            color: #fff;
-            cursor: pointer;
-            padding: 10px 20px;
-            margin-top: 10px;
+            background-color: #f8f9fa;
         }
-        #openChatbot {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            cursor: pointer;
-            border: none;
-            background: none;
+        .context-information h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #333;
         }
-        #closeChatbot {
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 18px;
-        }
-        #openChatbot img {
-            width: 50px; /* 画像の幅 */
-            height: auto; /* 高さを自動調整してアスペクト比を保持 */
-        }
-    </style>
+      </style>
 </head>
 <body>
     <button id="openChatbot">
-        <img src="http://localhost:8888/wptest/wp-content/themes/stw/assets/images/chat/スクリーンショット 2024-01-20 15.46.51.png" alt="チャット開始">
+        <img src="/contents/c.png" alt="c.png">
     </button>
     <div class="chatbot-window">
         <div class="chatbot-header">
-            <span>チャットボット サポート</span>
+            <span>Ulty powered by ChatGPT</span>
             <button id="closeChatbot">&times;</button>
         </div>
         <div class="chatbot-content">
@@ -117,12 +216,51 @@
             <button type="submit" class="send-button">送信</button>
         </form>
     </div>
+    <!-- ファイルアップロードフォームを追加 -->
+    <div class="main-container">
+        <div class="file-management">
+            <h3>ファイル管理</h3>
+            <form id="fileUploadForm">
+                <input type="file" id="fileInput" name="file" accept=".txt,.csv,.pdf">
+                <button type="button" id="uploadButton">ファイルをアップロード</button>
+            </form>
+            <button id="toggleFileListButton" class="toggle-button">ファイルリストを表示</button>
+            <div id="fileListContainer">
+                <div id="fileList"></div>
+            </div>
+            <div id="fileContent"></div>
+        </div>
+
+        <div class="context-information">
+            <h3>Context Information:</h3>
+            <div id="contextContent"></div>
+        </div>
+    </div>
     <script>
-        const socket = io('http://os3-284-31516.vs.sakura.ne.jp:3005');
+        let userId = localStorage.getItem('userId');
+        const socket = io('http://os3-284-31516.vs.sakura.ne.jp:3005/');
         let responseInProgress = false;
         let tempResponse = '';
         let lastUserInput = '';
         let previousConversation = '';
+
+        function getUserId() {
+            return fetch('/get_user_id')
+                .then(response => response.json())
+                .then(data => {
+                    userId = data.user_id;
+                    localStorage.setItem('userId', userId);
+                    return userId;
+                });
+        }
+
+        function initializeUserId() {
+            if (!userId) {
+                return getUserId();
+            } else {
+                return Promise.resolve(userId);
+            }
+        }
     
         function updateConversationHistory(message, sender) {
             const messageClass = (sender === 'user') ? 'user-message' : 'system-message';
@@ -140,22 +278,23 @@
         }
     
         $(document).ready(function() {
-            // 初期メッセージを追加
-            const initialMessage = 'こんにちは! ウルトラプリントBotです。\n\nウルトラプリントサービスについてウルトラプリントBotが回答いたします。お気軽にご質問ください。\n\n以下のような文章でご質問を入力してください。\n- OfficeBotはどんなことができますか?\n- OfficeBotのChatGPT連携について教えてくれますか?\n- OfficeBotの費用はいくらですか?\n\n※ウルトラプリントbotの回答は正確でない可能性があります。詳しくはメールやお電話のサービスをご利用ください。';
-            updateConversationHistory(initialMessage, 'system');
-            previousConversation = 'システム: ' + initialMessage;
-    
-            $('#userInputForm').submit(function(e) {
-                e.preventDefault();
-                const userInput = $('#userInput').val();
+            initializeUserId().then(() => {
+                // 初期メッセージを追加
+                const initialMessage = 'こんにちは! AIアシスタントのUltyです。\n\nウルトラプリントサービスについて回答いたします。お気軽にご質問ください。\n\n以下のような文章でご質問を入力してください。\n- Ultyはどんなことができますか?\n- UltyのChatGPT連携について教えてくれますか?\n- プリンターレンタルの費用はいくらですか?\n\n※Ultyの回答は正確でない可能性があります。詳しくはメールやお電話のサービスをご利用ください。';
+                updateConversationHistory(initialMessage, 'system');
+                previousConversation = 'システム: ' + initialMessage;
 
-                socket.emit('input', { user_input: userInput, previous_conversation: previousConversation });
+                $('#userInputForm').submit(function(e) {
+                    e.preventDefault();
+                    const userInput = $('#userInput').val();
 
-                updateConversationHistory(userInput, 'user');
-                previousConversation += '\nユーザー: ' + userInput; // ユーザーのメッセージをpreviousConversationに追加
+                    socket.emit('input', { user_input: userInput, previous_conversation: previousConversation, user_id: userId });
 
-                $('#userInput').val('');
-            });
+                    updateConversationHistory(userInput, 'user');
+                    previousConversation += '\nユーザー: ' + userInput;
+
+                    $('#userInput').val('');
+                });
                 
             $('#openChatbot').click(function() {
                 $('.chatbot-window').show();
@@ -184,6 +323,123 @@
             responseInProgress = false;
             // tempResponseの処理は不要になるため削除
         });
+        // ファイルリストの表示/非表示を切り替える関数
+        $('#toggleFileListButton').click(function() {
+                $('#fileListContainer').toggle();
+                $(this).toggleClass('active');
+                if ($(this).hasClass('active')) {
+                    $(this).text('ファイルリストを非表示');
+                    fetchAndDisplayFiles();
+                } else {
+                    $(this).text('ファイルリストを表示');
+                }
+            });
+        });
+
+        // ファイルアップロードの処理を追加
+        $('#uploadButton').click(function() {
+            const fileInput = $('#fileInput')[0];
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file, file.name);  // ファイル名を指定
+
+                $.ajax({
+                    url: '/upload',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        alert(data.message);
+                    },
+                    error: function(xhr, status, error) {
+                        alert('アップロード中にエラーが発生しました: ' + error);
+                    }
+                });
+            } else {
+                alert('ファイルが選択されていません。');
+            }
+        });
+        // ファイルリスト表示処理
+        // ファイルリストを取得して表示する関数
+        function fetchAndDisplayFiles() {
+                $.ajax({
+                    url: '/list-files',
+                    method: 'GET',
+                    success: function(data) {
+                        if (data.status === 'success') {
+                            var fileListHtml = '<ul>';
+                            data.files.forEach(function(file) {
+                                fileListHtml += '<li>' + file + 
+                                    ' <button class="file-action-button" onclick="deleteFile(\'' + file + '\')">削除</button>' +
+                                    ' <button class="file-action-button" onclick="toggleFileContent(\'' + file + '\')">表示/非表示</button></li>';
+                            });
+                            fileListHtml += '</ul>';
+                            $('#fileList').html(fileListHtml);
+                        } else {
+                            $('#fileList').html('ファイルを取得できませんでした。');
+                        }
+                    },
+                    error: function() {
+                        $('#fileList').html('サーバーとの通信に失敗しました。');
+                    }
+                });
+            }
+
+            // ファイルの内容を表示/非表示する関数
+            window.toggleFileContent = function(fileName) {
+                var contentDiv = $('#fileContent');
+                if (contentDiv.is(':visible') && contentDiv.data('current-file') === fileName) {
+                    contentDiv.hide();
+                } else {
+                    $.ajax({
+                        url: '/get-file-content',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ filename: fileName }),
+                        success: function(data) {
+                            if (data.status === 'success') {
+                                contentDiv.html('<pre>' + data.content + '</pre>').show();
+                                contentDiv.data('current-file', fileName);
+                            } else {
+                                alert(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('ファイル内容の取得中にエラーが発生しました: ' + error);
+                        }
+                    });
+                }
+            };
+
+            // ファイルを削除する関数
+            window.deleteFile = function(fileName) {
+                if (confirm('本当に削除しますか？ ' + fileName)) {
+                    $.ajax({
+                        url: '/delete-file',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ filename: fileName }),
+                        success: function(data) {
+                            if (data.status === 'success') {
+                                alert('ファイルが削除されました。');
+                                fetchAndDisplayFiles();
+                            } else {
+                                alert(data.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            alert('ファイル削除中にエラーが発生しました: ' + error);
+                        }
+                    });
+                }
+            };
+        
+        
+        // ページが読み込まれるたびにユーザーIDを確認・更新
+        window.addEventListener('load', initializeUserId);
     </script>
 </body>
 </html>

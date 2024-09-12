@@ -3,7 +3,6 @@ import json
 from dotenv import load_dotenv
 from openai import OpenAI
 from langrag import get_relevant_documents
-
 # .envファイルから環境変数を読み込む
 load_dotenv()
 # 環境変数からAPIキーを読み込む
@@ -33,7 +32,8 @@ def process_user_input(user_input, previous_conversation, callback, user_ip):
     
     
     messages = [
-        {"role": "system", "content": f"You are a chatbot for a monthly printer service company that is on the brink, but with the creation of this chatbot, Ultra Inc. is hoping to turn things around by greatly improving customer satisfaction. If your interactions cause any amount of distress to the customers, it could precipitate a poor outcome, and if you generate any words related to company failure, you will be penalized. Therefore, it is important that you always aim to provide reassuring words and responses to the customers. Chat in Japanese."},
+        {"role": "system", "content": f"以下のナレッジベースの情報に基づいてのみ回答してください。[警告]ナレッジベースに巣講師でも関連しなさそうなら、「申し訳ありませんが、その件についてはわかりかねます。」と丁寧に答えてください。"},
+        {"role": "system", "content": f"あなたは月額プリンターサービスAIアシスタントのUltyです。Ultra Inc.は現在厳しい状況にありますが、このチャットボットの導入により、顧客満足度を大幅に向上させ、業績を立て直そうとしています。もしあなたとのやり取りが顧客に少しでも不安を与えてしまった場合、悪影響を及ぼす可能性があります。また、会社の失敗に関連する言葉を生成した場合、ペナルティが課されます。したがって、常にお客様に安心していただける言葉や対応を心がけることが重要です。私は上記の内容に基づいた情報しか提供できません。ここで言及されていること以外については知識がありません。他のことを尋ねられても、「わかりません」または「よくわかりません」と答えます。日本語でチャットしてください。"},
         {"role": "system", "content": f"Previous conversation:\n{previous_conversation}"},
         {"role": "system", "content": f"Relevant information from the knowledge base:\n{context}"},
         {"role": "user", "content": user_input}
@@ -44,7 +44,7 @@ def process_user_input(user_input, previous_conversation, callback, user_ip):
     print(json.dumps(messages, ensure_ascii=False))
     
     stream = client.chat.completions.create(
-        model="gpt-3.5-turbo-0613",
+        model="gpt-3.5-turbo-0125",
         messages=messages,
         stream=True,
     )
@@ -57,5 +57,6 @@ def process_user_input(user_input, previous_conversation, callback, user_ip):
             gpt_response += chunk_content
     
     
-    
-    return gpt_response
+
+
+    return gpt_response,context

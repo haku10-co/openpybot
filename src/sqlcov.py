@@ -18,19 +18,20 @@ def create_table(conn):
             id INTEGER PRIMARY KEY,
             user_ip TEXT,
             user_input TEXT,
-            gpt_response TEXT
+            system_response TEXT,  # system_response カラムを追加
+            user_id TEXT
         )
         ''')
     except sqlite3.Error as e:
         print(e)
-def save_conversation(conn, user_ip, user_input, gpt_response):
-    """ユーザーのIPアドレス、入力、およびGPTの応答をデータベースに保存します。"""
-    try:
-        c = conn.cursor()
-        c.execute('INSERT INTO conversations (user_ip, user_input, gpt_response) VALUES (?, ?, ?)', (user_ip, user_input, gpt_response))
-        conn.commit()
-    except sqlite3.Error as e:
-        print(e)
+        
+def save_conversation(conn, user_ip, user_input, system_response, user_id):
+    sql = ''' INSERT INTO conversations(user_ip,user_input,system_response,user_id)
+              VALUES(?,?,?,?) '''
+    cur = conn.cursor()
+    cur.execute(sql, (user_ip, user_input, system_response, user_id))
+    conn.commit()
+    return cur.lastrowid
 
 def get_latest_conversation(conn, user_ip):
     """指定されたユーザーIPの最新の会話を取得します。"""
